@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mnemos - The Town That Never Forgets</title>
+  <link rel="stylesheet" href="/ui/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>Mnemos <span class="sub">- The Town That Never Forgets</span></h1>
+    <div class="top-actions">
+      <span id="cloud-badge" class="cloud-badge">Cognee Cloud: off</span>
+      <button id="btn-graph" class="btn">Memory Graph</button>
+      <button id="btn-new" class="btn">New Game</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="stage" aria-label="Game map">
+      <div class="act-banner"><strong id="act-label">Act 1</strong>
+        <span id="act-intro"></span></div>
+      <div class="canvas-wrap">
+        <div id="game" tabindex="0" aria-label="Mnemos town. Move with WASD or arrows."></div>
+        <canvas id="minimap" class="minimap" width="160" height="110" title="Town map"></canvas>
+        <div id="talk-prompt" class="talk-prompt" hidden>Talk [E]</div>
+      </div>
+      <p class="hint">Move <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> / arrows
+        &middot; Talk <kbd>E</kbd> &middot; click an NPC &middot; click a task to locate them.</p>
+    </section>
+
+    <aside class="side" aria-label="Player status">
+      <div class="panel oracle">
+        <h2>The Oracle</h2>
+        <div id="oracle-advice" class="advice"></div>
+        <div class="forecast">
+          <span>Trajectory</span>
+          <div class="track big"><div id="forecast-bar" class="fill"></div></div>
+          <strong id="forecast-label"></strong>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Tasks <span id="act-tag" class="act-tag">Act 1</span></h2>
+        <ul id="tasks" class="tasks"></ul>
+      </div>
+
+      <div class="panel">
+        <h2>Reputation</h2>
+        <div class="rep-row"><span>Standing</span><strong id="rep-score">0</strong></div>
+        <div class="bars">
+          <div class="bar"><label>Helped</label>
+            <div class="track"><div id="bar-helped" class="fill good"></div></div><span id="n-helped">0</span></div>
+          <div class="bar"><label>Harmed</label>
+            <div class="track"><div id="bar-harmed" class="fill bad"></div></div><span id="n-harmed">0</span></div>
+          <div class="bar"><label>Favours owed you</label>
+            <div class="track"><div id="bar-favor" class="fill fav"></div></div><span id="n-favor">0</span></div>
+        </div>
+        <div id="factions" class="tags"></div>
+        <div id="traits" class="tags"></div>
+      </div>
+
+      <div class="panel"><h2>Satchel</h2><ul id="inventory" class="inv"></ul></div>
+      <div class="panel"><h2>Rumour Ticker</h2><ul id="ticker" class="ticker" aria-live="polite"></ul></div>
+      <div class="panel"><h2>Quest Log</h2><ul id="log" class="log" aria-live="polite"></ul></div>
+    </aside>
+  </main>
+
+  <!-- Dialogue modal -->
+  <div id="dialogue" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="d-name">
+    <div class="dialogue-card">
+      <div class="dialogue-head">
+        <div id="d-portrait" class="portrait">?</div>
+        <div class="d-id">
+          <div id="d-name" class="d-name">NPC</div>
+          <div id="d-role" class="d-role"></div>
+          <div id="d-mood" class="d-mood"></div>
+        </div>
+        <button id="d-close" class="btn ghost" aria-label="Close">Close</button>
+      </div>
+      <div id="d-remember" class="remember" hidden></div>
+      <p id="d-line" class="d-line"></p>
+      <div id="d-choices" class="choices"></div>
+    </div>
+  </div>
+
+  <!-- Memory graph modal -->
+  <div id="graph-modal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="g-title">
+    <div class="graph-card">
+      <div class="dialogue-head">
+        <div id="g-title" class="d-name">What the town remembers</div>
+        <button id="g-close" class="btn ghost" aria-label="Close">Close</button>
+      </div>
+      <canvas id="graph-canvas" width="820" height="520"></canvas>
+      <p class="legend">
+        <span class="dot player"></span>Player<span class="dot npc"></span>NPC
+        <span class="dot event"></span>Event<span class="dot rumor"></span>Rumor
+        <span class="dot faction"></span>Faction</p>
+    </div>
+  </div>
+
+  <!-- Ending modal -->
+  <div id="ending-modal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="e-title">
+    <div class="ending-card">
+      <div id="e-kind" class="e-kind"></div>
+      <h2 id="e-title"></h2>
+      <p id="e-text"></p>
+      <button id="e-restart" class="btn primary">Play again</button>
+    </div>
+  </div>
+
+  <script src="/ui/vendor/phaser.min.js"></script>
+  <script src="/ui/app.js"></script>
+</body>
+</html>
