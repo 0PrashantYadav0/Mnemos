@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mnemos — The Town That Never Forgets</title>
+<style>
+  :root {
+    --bg: #0d0b1f;
+    --bg2: #141031;
+    --ink: #ece9ff;
+    --muted: #a7a0d6;
+    --gold: #f3c65a;
+    --gold-soft: #f7dd9a;
+    --violet: #8b7bff;
+    --teal: #4fd1c5;
+    --rose: #ff7b9c;
+    --card: rgba(255, 255, 255, 0.05);
+    --border: rgba(139, 123, 255, 0.28);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+    background: radial-gradient(1200px 800px at 70% -10%, #241a53 0%, var(--bg) 55%);
+    color: var(--ink);
+    overflow: hidden;
+  }
+  #deck { height: 100vh; width: 100vw; position: relative; }
+  .slide {
+    position: absolute;
+    inset: 0;
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    padding: 6vh 9vw;
+    animation: fade 0.5s ease;
+  }
+  .slide.active { display: flex; }
+  @keyframes fade {
+    from { opacity: 0; transform: translateY(18px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  h1 { font-size: clamp(2.4rem, 6vw, 4.6rem); line-height: 1.03; letter-spacing: -1px; }
+  h2 { font-size: clamp(1.7rem, 3.6vw, 2.9rem); margin-bottom: 1.4rem; color: var(--gold); }
+  .kicker {
+    text-transform: uppercase; letter-spacing: 4px; font-size: 0.82rem;
+    color: var(--violet); margin-bottom: 1.1rem; font-weight: 700;
+  }
+  p, li { font-size: clamp(1rem, 1.7vw, 1.35rem); line-height: 1.6; color: var(--ink); }
+  .sub { color: var(--muted); max-width: 60ch; margin-top: 1.2rem; }
+  .gold { color: var(--gold); }
+  .teal { color: var(--teal); }
+  .rose { color: var(--rose); }
+  .violet { color: var(--violet); }
+  code {
+    font-family: "SF Mono", "Fira Code", monospace;
+    background: rgba(139,123,255,0.14); color: var(--gold-soft);
+    padding: 0.12em 0.4em; border-radius: 6px; font-size: 0.92em;
+  }
+  ul { list-style: none; margin-top: 0.5rem; }
+  li { margin: 0.7rem 0; padding-left: 1.7rem; position: relative; }
+  li::before {
+    content: "◆"; color: var(--violet); position: absolute; left: 0; top: 0.05em;
+    font-size: 0.8em;
+  }
+  .grid { display: grid; gap: 1.2rem; margin-top: 1rem; }
+  .g2 { grid-template-columns: 1fr 1fr; }
+  .g3 { grid-template-columns: repeat(3, 1fr); }
+  .g4 { grid-template-columns: repeat(4, 1fr); }
+  .card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 16px; padding: 1.3rem 1.4rem;
+    backdrop-filter: blur(6px);
+  }
+  .card h3 { color: var(--gold); font-size: 1.15rem; margin-bottom: 0.5rem; }
+  .card p { font-size: 0.98rem; color: var(--muted); }
+  .verb { font-family: monospace; color: var(--teal); font-weight: 700; }
+  pre {
+    background: #0a0818; border: 1px solid var(--border); border-radius: 14px;
+    padding: 1.4rem 1.6rem; margin-top: 1.2rem; overflow: auto;
+    font-family: "SF Mono", monospace; font-size: clamp(0.72rem, 1.15vw, 1rem);
+    line-height: 1.5; color: var(--gold-soft);
+  }
+  pre .c { color: var(--muted); }
+  pre .k { color: var(--violet); }
+  .big { font-size: clamp(3rem, 9vw, 7rem); color: var(--gold); font-weight: 800; line-height: 1; }
+  .flow {
+    display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap;
+    margin-top: 1.6rem; font-family: monospace; font-size: clamp(0.8rem,1.4vw,1.15rem);
+  }
+  .node {
+    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+    padding: 0.7rem 1rem; color: var(--ink);
+  }
+  .arrow { color: var(--violet); font-size: 1.4rem; }
+  .endings { display: grid; grid-template-columns: repeat(2,1fr); gap: 1rem; margin-top: 1rem; }
+  .ending { border-left: 3px solid var(--violet); padding: 0.7rem 1.1rem; background: var(--card); border-radius: 0 12px 12px 0; }
+  .ending.good { border-color: var(--teal); }
+  .ending.bad { border-color: var(--rose); }
+  .ending.secret { border-color: var(--gold); }
+  .ending strong { display: block; font-size: 1.05rem; margin-bottom: 0.2rem; }
+  .ending span { color: var(--muted); font-size: 0.92rem; }
+  footer {
+    position: fixed; bottom: 22px; left: 0; right: 0;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0 9vw; color: var(--muted); font-size: 0.82rem; z-index: 5;
+  }
+  .dots { display: flex; gap: 7px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.2); }
+  .dot.on { background: var(--gold); box-shadow: 0 0 10px var(--gold); }
+  .hint { opacity: 0.6; }
+  .tag {
+    display: inline-block; background: rgba(79,209,197,0.14); color: var(--teal);
+    border: 1px solid rgba(79,209,197,0.3); border-radius: 20px;
+    padding: 0.3rem 0.9rem; font-size: 0.82rem; margin: 0.3rem 0.3rem 0 0;
+  }
+  .lead { font-size: clamp(1.15rem, 2.2vw, 1.7rem); color: var(--muted); max-width: 62ch; margin-top: 1.4rem; }
+  .quote { font-style: italic; color: var(--gold-soft); border-left: 3px solid var(--gold); padding-left: 1.2rem; margin-top: 1.5rem; }
+</style>
+</head>
+<body>
+<div id="deck">
+
+  <!-- 1 TITLE -->
+  <section class="slide active">
+    <div class="kicker">A narrative RPG on a graph-memory engine</div>
+    <h1>Mnemos<br /><span class="gold">The Town That Never Forgets</span></h1>
+    <p class="lead">You wake with total amnesia. The town remembers you <em>perfectly</em> —
+      because every NPC's memory lives in a real, typed <span class="violet">knowledge graph</span>.</p>
+    <div style="margin-top:1.8rem;">
+      <span class="tag">Python</span><span class="tag">FastAPI</span>
+      <span class="tag">Phaser 3</span><span class="tag">Zero-CDN</span>
+      <span class="tag">Graph memory</span>
+    </div>
+  </section>
+
+  <!-- 2 THE PROBLEM -->
+  <section class="slide">
+    <div class="kicker">The problem</div>
+    <h2>Game NPCs have goldfish memory</h2>
+    <p>Most game "memory" is a flag or a flat vector store. It can tell you a scene
+      <em>sounds similar</em> to a past one — but it can't model <span class="gold">who told whom</span>,
+      how a belief travelled, or that a rumor is second-hand and distortable.</p>
+    <div class="quote">Vector search finds similar <em>text</em>. It cannot represent that
+      NPC B learned about an event <span class="gold">from</span> NPC A, along a specific social path.</div>
+    <p class="sub">Result: towns full of independent chatbots that don't actually feel alive.</p>
+  </section>
+
+  <!-- 3 WHAT IS MNEMOS -->
+  <section class="slide">
+    <div class="kicker">The idea</div>
+    <h2>A town where memory is the mechanic</h2>
+    <div class="grid g3">
+      <div class="card"><h3>Real memory</h3><p>Every NPC genuinely remembers what you did, who told them, and how they feel about you.</p></div>
+      <div class="card"><h3>Gossip spreads</h3><p>Deeds propagate between characters as rumors across graph edges — reputation travels ahead of you.</p></div>
+      <div class="card"><h3>Choices compound</h3><p>Kindness and cruelty snowball into wildly different endings. The graph you build decides your fate.</p></div>
+    </div>
+    <p class="sub">And a "Memory Potion" that calls <code>forget()</code> to surgically erase an NPC's grudge — the on-theme showpiece.</p>
+  </section>
+
+  <!-- 4 GRAPH VS VECTORS -->
+  <section class="slide">
+    <div class="kicker">The key insight</div>
+    <h2>Why a graph, not vectors?</h2>
+    <p>Typed nodes: <code>Player · NPC · Event · Item · Location · Faction · Rumor · Trait</code></p>
+    <p style="margin-top:0.8rem;">Typed edges: <code>helped · harmed · owes-favor · trusts · distrusts · witnessed · <span class="gold">told-about</span> · member-of · has-trait</code></p>
+    <div class="quote">The star edge is <span class="gold">told-about</span> (NPC → NPC gossip). It encodes
+      that a belief is second-hand, weaker per hop, and travelled a real social path —
+      a <em>relationship</em>, not a similarity score.</div>
+  </section>
+
+  <!-- 5 ARCHITECTURE -->
+  <section class="slide">
+    <div class="kicker">Architecture</div>
+    <h2>A fully decoupled "NPC Brain"</h2>
+    <div class="flow">
+      <span class="node">Web client<br /><small class="hint">Phaser 3</small></span>
+      <span class="arrow">→</span>
+      <span class="node">Game server<br /><small class="hint">FastAPI</small></span>
+      <span class="arrow">→</span>
+      <span class="node" style="border-color:var(--gold);">NPC Brain<br /><small class="hint">4 verbs</small></span>
+      <span class="arrow">→</span>
+      <span class="node">Knowledge graph<br /><small class="hint">source of truth</small></span>
+    </div>
+    <p class="sub">The game only knows four HTTP verbs — <code>/brain/remember</code>,
+      <code>/recall</code>, <code>/improve</code>, <code>/forget</code>. Swap the client, or drop the
+      Brain into any game; it stays untouched. <span class="gold">That decoupling is the whole pitch.</span></p>
+  </section>
+
+  <!-- 6 THE FOUR VERBS -->
+  <section class="slide">
+    <div class="kicker">The engine</div>
+    <h2>Four verbs run everything</h2>
+    <div class="grid g4">
+      <div class="card"><h3><span class="verb">remember</span></h3><p>Write an event + typed edges. Trust shifts; betrayal counts more than a favor.</p></div>
+      <div class="card"><h3><span class="verb">recall</span></h3><p>Blend first-hand edges, second-hand rumors, and topic search into a disposition.</p></div>
+      <div class="card"><h3><span class="verb">improve</span></h3><p>Derive traits, reweight, and propagate rumors to socially-connected NPCs.</p></div>
+      <div class="card"><h3><span class="verb">forget</span></h3><p>Surgically delete a grudge + its rumor cascade. The rest of the graph survives.</p></div>
+    </div>
+    <p class="sub">Deterministic math is the source of truth. Mirrors to <span class="teal">Cognee Cloud</span> when a key is present.</p>
+  </section>
+
+  <!-- 7 RUMOR PROPAGATION -->
+  <section class="slide">
+    <div class="kicker">The magic moment</div>
+    <h2>Reputation arrives before you do</h2>
+    <pre><span class="c"># Act 1: you help Mira. She witnessed it.</span>
+brain.<span class="k">remember</span>(actor=player, target=mira, deed=<span class="k">"helped"</span>)
+
+<span class="c"># improve() spreads it to Mira's district & faction...</span>
+brain.<span class="k">improve</span>(scope=mira)   <span class="c"># told-about edges, confidence decays per hop</span>
+
+<span class="c"># Act 2: a stranger you've never met already knows.</span>
+brain.<span class="k">recall</span>(subject=stranger, about=player)
+<span class="c">#  → secondhand: "Mira speaks well of the stranger" (confidence 0.7)</span>
+<span class="c">#  → mood: "friendly"  (hearsay nudges trust, but weaker)</span></pre>
+    <p class="sub">In-game, the <span class="gold">Rumour Ticker</span> shows those <code>told-about</code> dots
+      travelling the graph in real time.</p>
+  </section>
+
+  <!-- 8 FORGET -->
+  <section class="slide">
+    <div class="kicker">The showpiece</div>
+    <h2>The Memory Potion: <span class="verb">forget()</span></h2>
+    <p>In Act 4 you brew a potion that does something vector memory can't do cleanly:
+      <span class="gold">surgically remove one grudge</span> — the <code>harmed</code> and
+      <code>distrusts</code> edges, the seed event, <em>and</em> the rumor cascade it spawned —
+      while leaving every other memory intact.</p>
+    <pre>brain.<span class="k">forget</span>(target_subject=renna, target_about=player,
+             edges=[<span class="k">"harmed"</span>, <span class="k">"distrusts"</span>], cascade_rumors=<span class="k">True</span>)
+<span class="c"># → disposition_after: mood flips "hostile" → "neutral"</span></pre>
+    <p class="sub">It's the theme made mechanical: forgetting as a precise graph operation.</p>
+  </section>
+
+  <!-- 9 ACTS & ENDINGS -->
+  <section class="slide">
+    <div class="kicker">The story</div>
+    <h2>Five acts, four endings</h2>
+    <p>The Waking → Reputation Travels → The Reckoning → The Town That Remembers → Restoration or Ruin.</p>
+    <div class="endings">
+      <div class="ending good"><strong class="teal">A — The Town That Remembers</strong><span>Good karma: favours converge to save you.</span></div>
+      <div class="ending"><strong>B — Hollow Victory</strong><span>Neutral. You win, but the town stays cold.</span></div>
+      <div class="ending bad"><strong class="rose">C — The Stranger, Forgotten</strong><span>Bad karma: the town forgets <em>you</em>.</span></div>
+      <div class="ending secret"><strong class="gold">D — The Amnesiac's Mercy</strong><span>Secret: spend the potion to free Renna.</span></div>
+    </div>
+  </section>
+
+  <!-- 10 TECH -->
+  <section class="slide">
+    <div class="kicker">Engineering</div>
+    <h2>Runs anywhere, phones home to no one</h2>
+    <div class="grid g2">
+      <div class="card"><h3>Zero-CDN client</h3><p>Phaser 3 vendored locally. Real tilemap, 4-direction animated sprites, arcade physics, particle effects. No internet at runtime.</p></div>
+      <div class="card"><h3>Procedural art</h3><p>Every sprite sheet & tileset generated by <code>gen_assets.py</code> with Pillow. No downloaded assets.</p></div>
+      <div class="card"><h3>Local-first, cloud-optional</h3><p>Deterministic local graph is authoritative; mirrors to <span class="teal">Cognee Cloud</span> when you opt in.</p></div>
+      <div class="card"><h3>Tested to the endings</h3><p>Pytest covers graph idempotency, all 4 verbs, rumor spread, surgical forget, full playthroughs, every endpoint.</p></div>
+    </div>
+  </section>
+
+  <!-- 11 CLOSE -->
+  <section class="slide">
+    <div class="kicker">In one line</div>
+    <h1>Memory you can <span class="gold">walk through.</span></h1>
+    <p class="lead">Mnemos turns a knowledge graph into a living town — where gossip travels,
+      grudges compound, and forgetting is a spell. The Brain is decoupled, so it can
+      remember for <em>your</em> game next.</p>
+    <div class="quote">Mnemos: the town that never forgets — and now, neither will your game.</div>
+  </section>
+
+</div>
+
+<footer>
+  <span class="hint">Mnemos &nbsp;·&nbsp; graph-memory RPG</span>
+  <div class="dots" id="dots"></div>
+  <span class="hint">← → or Space to navigate</span>
+</footer>
+
+<script>
+  const slides = [...document.querySelectorAll(".slide")];
+  const dotsEl = document.getElementById("dots");
+  let i = 0;
+  slides.forEach((_, n) => {
+    const d = document.createElement("div");
+    d.className = "dot" + (n === 0 ? " on" : "");
+    d.onclick = () => go(n);
+    dotsEl.appendChild(d);
+  });
+  const dots = [...dotsEl.children];
+  function go(n) {
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach((s, k) => s.classList.toggle("active", k === i));
+    dots.forEach((d, k) => d.classList.toggle("on", k === i));
+  }
+  document.addEventListener("keydown", (e) => {
+    if (["ArrowRight", " ", "PageDown"].includes(e.key)) { e.preventDefault(); go(i + 1); }
+    if (["ArrowLeft", "PageUp"].includes(e.key)) { e.preventDefault(); go(i - 1); }
+    if (e.key === "Home") go(0);
+    if (e.key === "End") go(slides.length - 1);
+  });
+  // swipe for touch
+  let x0 = null;
+  addEventListener("touchstart", e => x0 = e.touches[0].clientX);
+  addEventListener("touchend", e => {
+    if (x0 === null) return;
+    const dx = e.changedTouches[0].clientX - x0;
+    if (Math.abs(dx) > 50) go(i + (dx < 0 ? 1 : -1));
+    x0 = null;
+  });
+</script>
+</body>
+</html>
