@@ -7,12 +7,18 @@ requires-python = ">=3.11"
 dependencies = [
     "fastapi>=0.110",
     "uvicorn>=0.27",
+    "python-dotenv>=1.0",
 ]
 
 [project.optional-dependencies]
 dev = [
     "pytest>=8.0",
     "httpx>=0.27",
+]
+# Cognee Cloud mirror: enables the "Cognee Cloud: live" badge when
+# COGNEE_API_KEY is set. Heavyweight SDK (vector/graph + LLM clients).
+cognee = [
+    "cognee>=0.1",
 ]
 
 [build-system]
