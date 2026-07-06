@@ -16,6 +16,13 @@ compound into wildly different endings, and drink a "Memory Potion" that calls
 > Cognee Cloud key is present, every event is ALSO mirrored into Cognee Cloud so
 > the town's memory genuinely lives there and can be queried semantically.
 
+## Demo:
+
+**Watch the presentation video: [docs/mnemos-presentation.mp4](docs/mnemos-presentation.mp4)** — a ~4 min narrated walkthrough of the deck plus live gameplay footage.
+
+- Slides: [docs/presentation.html](docs/presentation.html)
+- Narration / captions: [docs/mnemos-video-script.txt](docs/mnemos-video-script.txt)
+
 ## Cognee Cloud
 
 The game plays fully without it (the header badge reads "Cognee Cloud: off").
