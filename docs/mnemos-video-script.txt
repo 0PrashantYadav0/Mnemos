@@ -1,0 +1,110 @@
+MNEMOS — THE TOWN THAT NEVER FORGETS
+Presentation Video — Narration Script (for captions / subtitles)
+Voice: Samantha (macOS)  ·  Total runtime ~3:47
+
+====================================================================
+[1] TITLE SLIDE
+--------------------------------------------------------------------
+This is Mnemos, The Town That Never Forgets. It's a narrative RPG,
+but the real project is underneath it: a memory engine for game
+characters. You wake up with total amnesia, but the town remembers
+you perfectly, because every character's memory lives in a real,
+typed knowledge graph.
+
+====================================================================
+[2] THE PROBLEM
+--------------------------------------------------------------------
+Here's the problem. Game NPCs have goldfish memory. Usually it's a
+boolean flag, or lately a flat vector store. A vector store can tell
+you a scene sounds similar to a past one, but it can't tell you who
+told whom, how a belief travelled, or that a rumor is second-hand and
+might be distorted. So you end up with a town of independent chatbots
+that don't feel alive.
+
+====================================================================
+[3] THE IDEA
+--------------------------------------------------------------------
+Mnemos makes memory the actual game mechanic. Every NPC genuinely
+remembers what you did and how they feel. Deeds spread between
+characters as gossip, so your reputation travels ahead of you. And
+your choices compound: kindness and cruelty snowball into completely
+different endings.
+
+====================================================================
+[4] GRAPH VS VECTORS
+--------------------------------------------------------------------
+The core design decision: a graph, not vectors. There are typed
+nodes — Player, NPC, Event, Rumor — and typed edges like helped,
+harmed, trusts, and distrusts. But the star is this one: told-about,
+NPC-to-NPC gossip. That edge encodes something a similarity score
+simply can't: that a belief is second-hand, that it gets weaker with
+every hop, and that it travelled a real social path. That's a
+relationship, not a lookup.
+
+====================================================================
+[5] ARCHITECTURE
+--------------------------------------------------------------------
+Architecturally, the memory is a fully decoupled NPC Brain. The web
+client, built in Phaser, talks to a FastAPI game server, which talks
+to the Brain, which owns the graph. The game only knows four HTTP
+verbs: remember, recall, improve, and forget. That means you can swap
+the client, or drop this Brain into a completely different game, and
+it doesn't change. That decoupling is really the whole pitch.
+
+====================================================================
+[6] THE FOUR VERBS
+--------------------------------------------------------------------
+Those four verbs run everything. Remember writes an event and its
+edges, and note, a betrayal shifts trust harder than a favor does.
+Recall blends first-hand memories, second-hand rumors, and topic
+search into a disposition. Improve derives traits and propagates
+rumors. And forget surgically deletes a grudge and its rumor cascade.
+
+====================================================================
+[7] RUMOR PROPAGATION — "The Magic Moment"
+--------------------------------------------------------------------
+But the magic moment is improve. In Act one, you help Mira. The
+improve call spreads that as told-about edges to everyone in her
+district and faction, with confidence decaying per hop. So in Act
+two, a stranger you have never met already greets you warmly, because
+the rumor reached them first. In-game, you literally watch those
+gossip dots travel the graph.
+
+====================================================================
+[DEMO] LIVE GAMEPLAY
+--------------------------------------------------------------------
+Here's Mnemos running live. You wake in the town, wander Market Row,
+and every character you meet already has an opinion of you. Open the
+Memory Graph, and you can see exactly what the town remembers: the
+player, every NPC, and the factions, all wired together into one
+living knowledge graph.
+
+====================================================================
+[8] FORGET() — The Showpiece
+--------------------------------------------------------------------
+And then the showpiece: the Memory Potion, which calls forget. It
+surgically removes one grudge — the harm edge, the distrust, the seed
+event, and the whole rumor cascade it spawned — while leaving every
+other memory intact. It's the theme made mechanical: forgetting as a
+precise graph operation.
+
+====================================================================
+[9] ACTS & ENDINGS
+--------------------------------------------------------------------
+All of this drives five acts and four endings, from the town saving
+you, to the town forgetting you, plus a secret ending where you spend
+the potion to free Renna.
+
+====================================================================
+[10] TECH
+--------------------------------------------------------------------
+And it runs anywhere. Zero-CDN, with Phaser vendored locally. All art
+is procedurally generated. It's local-first, with an optional Cognee
+Cloud mirror, and it's tested all the way through to every ending.
+
+====================================================================
+[11] CLOSE
+--------------------------------------------------------------------
+So that's Mnemos, memory you can walk through. The Brain is
+decoupled, so it can remember for your game next. Thanks for
+watching.
