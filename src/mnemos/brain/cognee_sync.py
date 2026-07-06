@@ -46,6 +46,8 @@ class CogneeCloudSync:
         self.dataset = dataset
         self.enabled = False
         self._buffer: list[str] = []
+        self._flush_lock = threading.Lock()
+        self._flushing = False
         try:
             import cognee
 
@@ -77,8 +79,51 @@ class CogneeCloudSync:
             return
         self._buffer.append(text)
 
-    def flush(self) -> dict:
-        """Push buffered memories into Cognee Cloud and build the graph."""
+    def flush(self, block: bool = False) -> dict:
+        """Mirror buffered memories into Cognee Cloud.
+
+        Fire-and-forget by default: the local typed graph is the authoritative
+        source of truth for gameplay, so the cloud mirror must NEVER block a
+        game turn (a cognify() call can take tens of seconds or hang if the
+        network/LLM is slow). We drain the buffer synchronously and hand the
+        heavy work to a daemon thread. Pass ``block=True`` (e.g. in tooling)
+        to wait for completion.
+        """
+        if not self.enabled or not self._buffer:
+            return {"flushed": 0}
+        texts = list(self._buffer)
+        self._buffer.clear()
+        combined = "\n\n".join(texts)
+
+        def _work() -> None:
+            async def _do():
+                await self._cognee.add(combined, dataset_name=self.dataset)
+                await self._cognee.cognify(datasets=[self.dataset])
+
+            try:
+                _run(_do())
+            except Exception as exc:  # noqa: BLE001
+                logger.warning("Cognee flush failed (non-fatal): %r", exc)
+            finally:
+                self._flushing = False
+
+        if block:
+            _work()
+            return {"flushed": len(texts)}
+
+        # non-blocking: skip if a mirror is already in flight (buffer stays
+        # drained; the next flush will carry any new memories).
+        with self._flush_lock:
+            if self._flushing:
+                # re-queue these texts so they aren't lost
+                self._buffer[:0] = texts
+                return {"flushed": 0, "queued": len(texts)}
+            self._flushing = True
+        threading.Thread(target=_work, daemon=True).start()
+        return {"flushed": len(texts), "async": True}
+
+    def _flush_blocking(self) -> dict:
+        """Legacy synchronous flush (kept for explicit tooling use)."""
         if not self.enabled or not self._buffer:
             return {"flushed": 0}
         texts = list(self._buffer)
